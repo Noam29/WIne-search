@@ -81,15 +81,27 @@ def parse_price(text: str) -> Optional[float]:
         return None
 
 def extract_ml(text: str) -> Optional[int]:
+    """Extract bottle size in milliliters from text.
+
+    The original implementation failed to handle numbers containing comma
+    thousand separators (e.g. ``"1,500 ml"``), returning only the digits after
+    the comma.  Normalise the input by removing commas before running the
+    regular expressions so such cases are parsed correctly.
+    """
     if not text:
         return None
-    m = ML_RE.search(text)
+
+    # Remove common thousands separators to ensure accurate digit matching
+    cleaned = text.replace(",", "")
+
+    m = ML_RE.search(cleaned)
     if m:
         try:
             return int(m.group(1))
         except Exception:
             pass
-    m2 = ML_NUMBER_RE.search(text)
+
+    m2 = ML_NUMBER_RE.search(cleaned)
     if m2:
         try:
             ml = int(m2.group(1))
